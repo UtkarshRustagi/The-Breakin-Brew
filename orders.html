@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Orders</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #fff; }
+    header { background-color: #ffc343b3; color: #fff; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; width: 100%; }
+    .content { display: flex; flex-wrap: wrap; padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .order-container { flex: 1 1 60%; margin-right: 20px; }
+    .order-box { display: flex; flex-direction: column; background-color: #ffc343b3; border-radius: 8px; padding: 20px; margin-bottom: 20px; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .order-info h3 { margin-bottom: 10px; }
+    .order-actions { margin-top: 10px; }
+    .order-actions button { padding: 10px 15px; border: none; margin-right: 10px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .track-order { background-color: #007bff; color: #fff; }
+    .cancel-order { background-color: #dc3545; color: #fff; }
+    .pay-now { background-color: #28a745; color: #fff; }
+    .offer-container { flex: 1 1 35%; background-color: #ffc343b3; padding: 20px; border-radius: 8px; color: #fff; max-height: 500px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .offer-container h3 { margin-bottom: 15px; }
+    .offer-box { background-color: #ffffff; color: #000000; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 14px; }
+    .offer-box strong { color: red; }
+    @media (max-width: 768px) { .content { flex-direction: column; } .order-container, .offer-container { flex: 1 1 100%; margin-right: 0; } .order-actions button { margin-bottom: 10px; width: 100%; } }
+  </style>
+</head>
+<body>
+  <header>Your Orders</header>
+  <main class="content">
+    <section class="order-container">
+      <div id="orderList"></div>
+    </section>
+    <aside class="offer-container">
+      <h3>🔥🔥🔥🔥 Exclusive Offers 🔥🔥🔥🔥</h3>
+      <div id="offerList"></div>
+    </aside>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const orders = JSON.parse(localStorage.getItem("orders")) || [];
+      const paidOrders = JSON.parse(localStorage.getItem("paidOrders")) || [];
+      const orderList = document.getElementById("orderList");
+      const offerList = document.getElementById("offerList");
+
+      if (orders.length === 0) {
+        orderList.innerHTML = "<p>No orders placed yet.</p>";
+      } else {
+        orders.forEach((order, index) => {
+          if (!order.id) {
+            order.id = "ORD" + Math.floor(100000 + Math.random() * 900000);
+            orders[index] = order;
+          }
+
+          const orderItem = document.createElement("div");
+          orderItem.classList.add("order-box");
+
+          const orderInfo = document.createElement("div");
+          orderInfo.classList.add("order-info");
+
+          const orderName = document.createElement("h3");
+          orderName.textContent = order.name;
+
+          const orderId = document.createElement("p");
+          orderId.innerHTML = `<strong>Order ID:</strong> ${order.id}`;
+
+          const orderPrice = document.createElement("p");
+          orderPrice.innerHTML = `<strong>Price:</strong> ₹${order.price}`;
+
+          const orderActions = document.createElement("div");
+          orderActions.classList.add("order-actions");
+
+          const trackButton = document.createElement("button");
+          trackButton.classList.add("track-order");
+          trackButton.textContent = "Track Order";
+          trackButton.onclick = () => trackOrder(order.id);
+
+          const cancelButton = document.createElement("button");
+          cancelButton.classList.add("cancel-order");
+          cancelButton.textContent = "Cancel Order";
+          cancelButton.onclick = () => cancelOrder(order.id);
+
+          orderActions.appendChild(trackButton);
+          orderActions.appendChild(cancelButton);
+
+          if (paidOrders.includes(order.id)) {
+            const paidStatus = document.createElement("p");
+            paidStatus.textContent = "✅ Paid";
+            orderActions.appendChild(paidStatus);
+          } else {
+            const payButton = document.createElement("button");
+            payButton.classList.add("pay-now");
+            payButton.textContent = "Pay Now";
+            payButton.onclick = () => payNow(order.id, order.price);
+            orderActions.appendChild(payButton);
+          }
+
+          orderInfo.appendChild(orderName);
+          orderInfo.appendChild(orderId);
+          orderInfo.appendChild(orderPrice);
+          orderInfo.appendChild(orderActions);
+
+          orderItem.appendChild(orderInfo);
+          orderList.appendChild(orderItem);
+        });
+
+        localStorage.setItem("orders", JSON.stringify(orders));
+      }
+
+      const offers = [
+        "Get 10% off on Shakes!", "Buy 1 Get 1 Free on Croissant", "Flat ₹100 off on buying two Cheesecake", "Special 5% Cashback on UPI Payments",
+        "15% off on Cheesecake & Matcha Latte", "Exclusive 20% Discount for order above ₹999", "Flat 150 off on Orders Above 899","Buy a Caffè Macchiato and get a free Croissant",
+        "Get a free dessert with every order above ₹500", "10% off on your next order with code NEXT10", "Free delivery on orders above ₹500",
+      ];
+
+      offers.forEach(offer => {
+        const offerItem = document.createElement("div");
+        offerItem.classList.add("offer-box");
+        offerItem.innerHTML = `<strong>Deal:</strong> ${offer}`;
+        offerList.appendChild(offerItem);
+      });
+    });
+
+    function trackOrder(orderId) {
+      window.location.href = "tracking.html?orderId=" + orderId;
+    }
+
+    function payNow(orderId, amount) {
+      window.location.href = `payment.html?orderId=${orderId}&amount=${amount}`;
+    }
+
+    function cancelOrder(orderId) {
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      const updatedOrders = orders.filter(order => order.id !== orderId);
+      localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      location.reload();
+    }
+  </script>
+</body>
+</html>
+<!-- End of HTML Document -->
+<!-- This is a simple order tracking page with a feedback form. The page includes a header, input for tracking number, a tracking status display, and a feedback form. The JavaScript handles the tracking logic and feedback submission. -->

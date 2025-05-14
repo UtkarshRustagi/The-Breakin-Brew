@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracking</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        body, h1 {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f4f8; /* Softer Gray Background */
+            color: #333;
+        }
+        .header {
+            background-color: #d3b269;
+            color: white;
+            padding: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 40px auto;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #36d1dc;
+            box-shadow: 0 0 8px rgba(54, 209, 220, 0.5);
+        }
+        button {
+            padding: 12px 20px;
+            background: #d3b269;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2bb2c3;
+        }
+        .tracker {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 30px 0;
+        }
+        .step {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #d1d5db;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+            transition: background 0.3s ease;
+        }
+        .line {
+            position: absolute;
+            height: 5px;
+            width: 100%;
+            background: #d1d5db;
+            top: 50%;
+            left: 0;
+        }
+        .completed {
+            background: darkblue;
+            color: #fff;
+        }
+        .completed + .line {
+            background: darkblue;
+        }
+        #errorText {
+            color: #e74c3c;
+            font-size: 14px;
+        }
+        #statusText {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        /* Feedback Form Styling */
+        .feedback-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .feedback-section h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            height: 120px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Order Tracking</div>
+    <div class="container">
+        <input type="text" id="trackingNumber" placeholder="Enter 9-digit Tracking Number">
+        <p id="errorText"></p>
+        <button onclick="startTracking()">Track</button>
+        <div class="tracker">
+            <div class="step" id="step1">1</div>
+            <div class="line"></div>
+            <div class="step" id="step2">2</div>
+            <div class="line"></div>
+            <div class="step" id="step3">3</div>
+            <div class="line"></div>
+            <div class="step" id="step4">4</div>
+            <div class="line"></div>
+            <div class="step" id="step5">5</div>
+        </div>
+        <p id="statusText">Status: Waiting for tracking number...</p>
+    </div>
+
+    <!-- Feedback Form Section -->
+    <div class="container feedback-section">
+        <h3>We Value Your Feedback</h3>
+        <form id="feedbackForm">
+            <textarea id="feedbackText" placeholder="Enter your feedback here..."></textarea>
+            <button type="submit">Submit Feedback</button>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const statuses = ["Order Placed", "Order Processed", "Order Shipped", "Out for Delivery", "Delivered"];
+        let interval;
+
+        function startTracking() {
+            const trackingNumber = document.getElementById("trackingNumber").value;
+            const errorText = document.getElementById("errorText");
+
+            if (!/^[0-9]{9}$/.test(trackingNumber)) {
+                errorText.innerText = "Invalid tracking number. Please enter a valid 9-digit number.";
+                return;
+            }
+
+            errorText.innerText = "";
+            currentStep = 0;
+            clearInterval(interval);
+            updateTracker();
+            interval = setInterval(updateTracker, 4000);
+        }
+
+        function updateTracker() {
+            if (currentStep >= statuses.length) {
+                clearInterval(interval);
+                return;
+            }
+
+            document.getElementById(`step${currentStep + 1}`).classList.add("completed");
+
+            if (currentStep > 0) {
+                document.querySelectorAll(".line")[currentStep - 1].classList.add("completed");
+            }
+
+            document.getElementById("statusText").innerText = "Status: " + statuses[currentStep];
+            currentStep++;
+        }
+
+        // Handle feedback form submission
+        document.getElementById("feedbackForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const feedbackText = document.getElementById("feedbackText").value;
+
+            if (feedbackText) {
+                alert("Thank you for your feedback!");
+                document.getElementById("feedbackText").value = ""; // Clear feedback form
+            } else {
+                alert("Please enter some feedback before submitting.");
+            }
+        });
+    </script>
+</body>
+</html>
+<!-- End of HTML Document -->
+<!-- This is a simple order tracking page with a feedback form. The page includes a header, input for tracking number, a tracking status display, and a feedback form. The JavaScript handles the tracking logic and feedback submission. -->
