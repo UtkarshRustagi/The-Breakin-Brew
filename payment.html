@@ -174,19 +174,26 @@
         }
 
         function validatePayment() {
-            const method = document.getElementById("paymentMethod").value;
-            let isValid = false;
+      const payNowBtn = document.getElementById("payNow");
+      const isCardValid = document.getElementById("paymentMethod").value === "credit" || document.getElementById("paymentMethod").value === "debit";
+      const isUpiValid = document.getElementById("paymentMethod").value === "upi";
+      const isNetBankingValid = document.getElementById("paymentMethod").value === "netbanking";
 
-            if (method === "credit" || method === "debit") {
-                isValid = document.getElementById("cardNumber").value.length === 16;
-            } else if (method === "upi") {
-                isValid = /^[a-zA-Z0-9]+@[a-zA-Z]+$/.test(document.getElementById("upiId").value);
-            } else if (method === "netbanking") {
-                isValid = document.getElementById("accountNumber").value.length >= 9;
-            }
-
-            document.getElementById("payNow").disabled = !isValid;
-        }
+      if (isCardValid) {
+        const cardNumber = document.getElementById("cardNumber").value;
+        const cvv = document.getElementById("cvv").value;
+        const expiry = document.getElementById("expiry").value;
+        payNowBtn.disabled = !(cardNumber && cvv && expiry && /^\d{16}$/.test(cardNumber) && /^\d{3}$/.test(cvv));
+      } else if (isUpiValid) {
+        const upiId = document.getElementById("upiId").value;
+        payNowBtn.disabled = !(upiId && /^\d{10}@upi$/.test(upiId));
+      } else if (isNetBankingValid) {
+        const bankName = document.getElementById("bankName").value;
+        const accountNumber = document.getElementById("accountNumber").value;
+        const ifsc = document.getElementById("ifsc").value;
+        payNowBtn.disabled = !(bankName && accountNumber && ifsc && /^\d{9,18}$/.test(accountNumber) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc));
+      }
+    }
 
         function processPayment() {
             const orderId = document.getElementById("orderId").innerText;
